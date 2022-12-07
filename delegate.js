@@ -35,45 +35,50 @@ const main = async () => {
          lockup: new Lockup(0, 0, wallet.publicKey),
         //account as stake account
         stakePubkey: stakeAcct.publicKey
- })
- //endAndConfirmTransaction args connect, txn, signers)
- //two here wallet and stake account
- // txn id returned if successful
- const createStakeAccountId = await sendAndConfirmTransaction(connection, createStakeAccountTxn, [wallet, stakeAcct])
- console.log("it worked stake account created   ", `${createStakeAccountId}`);
- //divdes into sol
- let stakingBalance = await connection.getBalance(stakeAcct.publicKey);
- console.log("here's the balance of the stake account ",  `${stakingBalance / LAMPORTS_PER_SOL}`);
- //balance is inactive until delgatation occurs
- let stakeStatus = await connection.getStakeActivation(stakeAcct.publicKey);
- console.log("here's thestake status ",  `${stakeStatus.state}`);
- //get list of validators
- //choose any but we choose first 
- const validators = await connection.getVoteAccounts();
- const selectedValidator = validators.current[0];
- const pKeyOfValidator = new PublicKey(selectedValidator.votePubkey);
- // delegate stake 
- //pass in stake account
- // authority to do txn - you have authority
- // then the validator to delegate to 
- const delegateTransact = StakeProgram.delegate({
-    stakePubkey: stakeAcct.publicKey,
-    authorizedPubkey: wallet.publicKey,
-    votePubkey: pKeyOfValidator,
- });
-  //then send/confirm txn
-  //args connection, the txn you want to confirm 
-  const delegateTxId = await sendAndConfirmTransaction(
-    connection, 
-    delegateTransact, 
-    [wallet]
-  );
-  
-  console.log("Stake account chose validator:" + pKeyOfValidator);
-  console.log("Transaction Id " + delegateTxId );
-  console.log("Stake account status is now " + stakeStatus.state);
+        });
+        //endAndConfirmTransaction args connect, txn, signers)
+        //two here wallet and stake account
+        // txn id returned if successful
+        const createStakeAccountId = await sendAndConfirmTransaction(connection, createStakeAccountTxn, [wallet, stakeAcct])
+        console.log("it worked stake account created   ", `${createStakeAccountId}`);
+        //divdes into sol
+        let stakingBalance = await connection.getBalance(stakeAcct.publicKey);
+        console.log("here's the balance of the stake account ",  `${stakingBalance / LAMPORTS_PER_SOL}`);
+        //balance is inactive until delgatation occurs
+        let stakeStatus = await connection.getStakeActivation(stakeAcct.publicKey);
+        console.log("here's the stake status ",  `${stakeStatus.state}`);
 
- };
+
+
+        //get list of validators
+        //choose any but we choose first 
+        const validators = await connection.getVoteAccounts();
+        const selectedValidator = validators.current[0];
+        const pKeyOfValidator = new PublicKey(selectedValidator.votePubkey);
+        // delegate stake 
+        //pass in stake account
+        // authority to do txn - you have authority
+        // then the validator to delegate to 
+        const delegateTransact = StakeProgram.delegate({
+            stakePubkey: stakeAcct.publicKey,
+            authorizedPubkey: wallet.publicKey,
+            votePubkey: pKeyOfValidator,
+        });
+        //then send/confirm txn
+        //args connection, the txn you want to confirm 
+        const delegateTxId = await sendAndConfirmTransaction(
+            connection, 
+            delegateTransact, 
+            [wallet]
+        );
+
+        const newStakeStatus = await connection.getStakeActivation(stakeAcct.publicKey);
+        
+        console.log("Stake account chose validator:" + pKeyOfValidator);
+        console.log("Transaction Id " + delegateTxId );
+        console.log("Stake account status is now " + newStakeStatus.state);
+
+    };
 
 //call main function - async w/ try/catch
 
