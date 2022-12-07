@@ -1,4 +1,4 @@
-const { Connection, clusterApiUrl, Keypair, LAMPORTS_PER_SOL} = require("@solana/web3.js");
+const { Connection, clusterApiUrl, Keypair, LAMPORTS_PER_SOL, StakeProgram, Authorized, sendAndConfirmRawTransaction, sendAndConfirmTransaction, Lockup} = require("@solana/web3.js");
 
 
 const main = async () => {
@@ -12,11 +12,39 @@ const main = async () => {
     await connection.confirmTransaction(airdropSig);
     const balance = await connection.getBalance(wallet.publicKey);
     console.log(balance);
-
-
-};
+    //time to stake
+    //generate stake accoint
+    const stakeAcct = Keypair.generate()
+    //calc rent balance
+    //get size of stake account w/stakeProgram
+    const minRent = await connection.getMinimumBalanceForRentExemption(StakeProgram.space);
+    //confirm amount user wants to stake 0.5
+    const amountUserWantsStaked = 0.5 * LAMPORTS_PER_SOL
+    const amountToStake = minRent + amountUserWantsStaked
+    //authorized is where we set the authority wallet of the stake account
+    //set two authorities 1. stake authority for who delegates stake - deactive or split/merge account/
+    //2. withdrawl authority who can remove funds
+    const createStakeAccountTxn = StakeProgram.createAccount({
+        authorized: new Authorized(wallet.publicKey, wallet.publicKey),
+        //specifys where sol that is staked comes from
+        fromPubkey: wallet.publicKey,
+        //amount we want to stake
+        lamports: amountToStake,
+        //lock up - specific date and time
+        //new lockup then expire unix time stamp - epoch and custodian 
+         lockup: new Lockup(0, 0, wallet.publicKey),
+        //account as stake account
+        stakePubkey: stakeAcct.publicKey
+ })
+ //endAndConfirmTransaction args connect, txn, signers)
+ //two here wallet and stake account
+ // txn id returned if successful
+ const createStakeAccountId = await sendAndConfirmTransaction(connection, createStakeAccountTxn, [wallet, stakeAcct])
+ console.log("it worked stake account created   ", `${createStakeAccountId}`);
+ };
 
 //call main function - async w/ try/catch
+
 const runMain = async () => {
     try {
         await main();
