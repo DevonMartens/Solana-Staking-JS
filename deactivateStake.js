@@ -78,13 +78,15 @@ const main = async () => {
         console.log("Transaction Id " + delegateTxId );
         console.log("Stake account status is now " + newStakeStatus.state);
         //deacivate stake txn
-        const deacivateStakeTxn = StakeProgram.deacivate({
+        const deacivateStakeTxn = StakeProgram.deactivate({
             stakePubkey: stakeAcct.publicKey,
             authorizedPubkey: wallet.publicKey,
         });
         
-        const deacivateStakeTxnID = await sendAndConfirmTransaction(connection, deacivateStakeTxn);
+        const deacivateStakeTxnID = await sendAndConfirmTransaction(connection, deacivateStakeTxn, [wallet]);
         console.log("stake account deactivated ",  `${deacivateStakeTxnID}`);
+        const finalStatus = await connection.getStakeActivation(stakeAcct.publicKey);
+        console.log("confirm status as deactivated ",  `${finalStatus.state}`);
 
     };
 
