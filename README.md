@@ -14,6 +14,12 @@
 
 4. `delegate.js` creats accounts + delegates the funds to a validator.
 
+5. `getSpecificDelegator.js` creats accounts + delegates the funds to a specific delegator.
+ 
+6. `deactivateStake.js` - sets account to inactivate
+
+7. `withdraw.js` - allows withdraw of SOL.
+
 # Commands to run
 
 1. Install node:
